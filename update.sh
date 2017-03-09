@@ -16,13 +16,15 @@ mkdir -p "$ROOT"
 
 if ! [ -d "$SRC/hlhdf" ]; then
     cd "$SRC"; git clone git://git.baltrad.eu/hlhdf.git
+    cd "$SRC/hlhdf"
+    ./configure \
+        --prefix="$ROOT/hlhdf" \
+        --with-hdf5="${OPT_INCLUDE},${OPT_LIB}"
 fi
 
 cd "$SRC/hlhdf"
 git pull
-./configure \
-    --prefix="$ROOT" \
-    --with-hdf5="${OPT_INCLUDE},${OPT_LIB}"
+sed -i '' -e 's/-bundle/-dynamiclib/g' def.mk
 make
 make install
 
@@ -31,33 +33,38 @@ make install
 
 if ! [ -d "$SRC/rave" ]; then
     cd "$SRC"; git clone git://git.baltrad.eu/rave.git
+    cd "$SRC/rave"
+    ./configure \
+        --prefix="$ROOT" \
+        --with-hlhdf="$ROOT/hlhdf" \
 fi
 
 cd "$SRC/rave"
-./configure \
-    --prefix="$ROOT" \
-    --with-hlhdf="$ROOT" \
-
 make
 make install
 
 
 ## rsl
 
+rsl_needs_configure="no"
 if ! [ -d "$SRC/rsl" ]; then
     cd "$SRC"; git clone https://github.com/adokter/rsl.git
+    cd "$SRC/rsl/decode_ar2v"
+    ./configure --prefix="$ROOT"
+    rsl_needs_configure="yes"
 fi
 
 cd "$SRC/rsl/decode_ar2v"
-
-cd decode_ar2v
-./configure --prefix="$ROOT"
 make
 make install
 export PATH="$ROOT/bin:$PATH"
 
+if [ "$rsl_needs_configure" = "yes" ]; then
+    cd "$SRC/rsl"
+    ./configure --prefix="$ROOT"
+fi
+
 cd "$SRC/rsl"
-./configure --prefix="$ROOT"
 make AUTOCONF=: AUTOHEADER=: AUTOMAKE=: ACLOCAL=:
 make install AUTOCONF=: AUTOHEADER=: AUTOMAKE=: ACLOCAL=:
 
@@ -66,14 +73,16 @@ make install AUTOCONF=: AUTOHEADER=: AUTOMAKE=: ACLOCAL=:
 
 if ! [ -d "$SRC/vol2bird" ]; then
     cd "$SRC"; git clone https://github.com/adokter/vol2bird.git
+    cd "$SRC/vol2bird"
+    LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" ./configure \
+        --prefix="$ROOT" \
+        --with-rave="$ROOT" \
+        --with-rsl="$ROOT" \
+        --with-confuse="${OPT_LIB}" \
+        --with-gsl="${OPT_INCLUDE}/gsl,${OPT_LIB}" \
+    sed -i '' -e 's/-arch i386//g' def.mk
 fi
 
 cd "$SRC/vol2bird"
-./configure \
-    --prefix="$ROOT" \
-    --with-rave="$ROOT" \
-    --with-rsl="$ROOT" \
-    --with-gsl="${OPT_INCLUDE},${OPT_LIB}" \
-
 make
 make install
