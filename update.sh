@@ -36,7 +36,7 @@ if ! [ -d "$SRC/rave" ]; then
     cd "$SRC/rave"
     ./configure \
         --prefix="$ROOT" \
-        --with-hlhdf="$ROOT/hlhdf" \
+        --with-hlhdf="$ROOT/hlhdf"
 fi
 
 cd "$SRC/rave"
@@ -79,7 +79,7 @@ if ! [ -d "$SRC/vol2bird" ]; then
         --with-rave="$ROOT" \
         --with-rsl="$ROOT" \
         --with-confuse="${OPT_LIB}" \
-        --with-gsl="${OPT_INCLUDE}/gsl,${OPT_LIB}" \
+        --with-gsl="${OPT_INCLUDE}/gsl,${OPT_LIB}"
     sed -i '' -e 's/-arch i386//g' def.mk
 fi
 
