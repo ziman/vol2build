@@ -5,9 +5,18 @@ set -x
 
 SRC="$PWD/src"
 ROOT="$PWD/build"
-OPT_INCLUDE="/opt/local/include"
-OPT_LIB="/opt/local/lib"
 platform="$(uname -s)"
+
+if [ "$platform" = "Darwin" ]; then
+    OPT_INCLUDE="/opt/local/include"
+    OPT_LIB="/opt/local/lib"
+elif [ "$platform" = "Linux" ]; then
+    OPT_INCLUDE="/usr/include"
+    OPT_LIB="/usr/lib/x86_64-linux-gnu/"
+else
+    echo "unknown platform" >&2
+    exit 1
+fi
 
 mkdir -p "$SRC"
 mkdir -p "$ROOT"
