@@ -23,7 +23,8 @@ if ! [ -d "$SRC/hlhdf" ]; then
 fi
 
 cd "$SRC/hlhdf"
-git pull
+git fetch origin
+git checkout --theirs -f origin/master
 sed -i '' -e 's/-bundle/-dynamiclib/g' def.mk
 make
 make install
@@ -73,15 +74,22 @@ make install AUTOCONF=: AUTOHEADER=: AUTOMAKE=: ACLOCAL=:
 
 if ! [ -d "$SRC/vol2bird" ]; then
     cd "$SRC"; git clone https://github.com/adokter/vol2bird.git
+else
     cd "$SRC/vol2bird"
-    LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" ./configure \
-        --prefix="$ROOT" \
-        --with-rave="$ROOT" \
-        --with-rsl="$ROOT" \
-        --with-confuse="${OPT_LIB}" \
-        --with-gsl="${OPT_INCLUDE}/gsl,${OPT_LIB}"
-    sed -i '' -e 's/-arch i386//g' def.mk
+    git fetch origin
+    git checkout --theirs -f origin/master
 fi
+
+cd "$SRC/vol2bird"
+LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" ./configure \
+    --prefix="$ROOT" \
+    --with-rave="$ROOT" \
+    --with-rsl="$ROOT" \
+    --with-confuse="${OPT_LIB}" \
+    --with-gsl="${OPT_INCLUDE}/gsl,${OPT_LIB}"
+
+# apply patch
+sed -i '' -e 's/-arch i386//g' def.mk
 
 cd "$SRC/vol2bird"
 make
