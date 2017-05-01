@@ -7,16 +7,20 @@ SRC="$PWD/src"
 ROOT="$PWD/build"
 platform="$(uname -s)"
 
-if [ "$platform" = "Darwin" ]; then
-    OPT_INCLUDE="/opt/local/include"
-    OPT_LIB="/opt/local/lib"
-elif [ "$platform" = "Linux" ]; then
-    OPT_INCLUDE="/usr/include"
-    OPT_LIB="/usr/lib/x86_64-linux-gnu/"
-else
-    echo "unknown platform" >&2
-    exit 1
-fi
+case "$platform" in
+    Darwin)
+        INCLUDE="/opt/local/include"
+        LIBDIR="/opt/local/lib"
+        ;;
+    Linux)
+        INCLUDE="/usr/include"
+        LIBDIR="/usr/lib/x86_64-linux-gnu/"
+        ;;
+    *)
+        echo "unknown platform" >&2
+        exit 1
+        ;;
+esac
 
 mkdir -p "$SRC"
 mkdir -p "$ROOT"
@@ -30,11 +34,11 @@ if ! [ -d "$SRC/hlhdf" ]; then
     if [ "$platform" = "Darwin" ]; then
         ./configure \
             --prefix="$ROOT/hlhdf" \
-            --with-hdf5="${OPT_INCLUDE},${OPT_LIB}"
+            --with-hdf5="${INCLUDE},${LIBDIR}"
     elif [ "$platform" = "Linux" ]; then
         ./configure \
             --prefix="$ROOT/hlhdf" \
-            --with-hdf5="/usr/include/hdf5/serial,/usr/lib/x86_64-linux-gnu/hdf5/serial/"
+            --with-hdf5="${INCLUDE}/hdf5/serial,${LIBDIR}/hdf5/serial/"
     fi
 fi
 
@@ -99,12 +103,12 @@ else
 fi
 
 cd "$SRC/vol2bird"
-LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" ./configure \
+LDFLAGS="-L${LIBDIR}" CFLAGS="-I${INCLUDE}" ./configure \
     --prefix="$ROOT" \
     --with-rave="$ROOT" \
     --with-rsl="$ROOT" \
-    --with-confuse="${OPT_LIB}" \
-    --with-gsl="${OPT_INCLUDE}/gsl,${OPT_LIB}"
+    --with-confuse="${LIBDIR}" \
+    --with-gsl="${INCLUDE}/gsl,${LIBDIR}"
 
 # apply patch
 if [ "$platform" = "Darwin" ]; then
